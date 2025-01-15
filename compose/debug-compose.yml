@@ -1,0 +1,43 @@
+services:
+    # celery-flower:
+    #     container_name: celery-flower
+    #     image: mher/flower
+    #     command: sh -c 'celery --broker=redis://:"$$(cat $$REDIS_PASS_FILE)"@$$REDIS_HOST:$$REDIS_PORT flower --port=$$RUNNING_PORT'
+    #     networks:
+    #         - backend-network
+    #         - public-network
+    #     secrets:
+    #         - redis_secret
+    #     env_file:
+    #         - ../env/.celeryflower.env
+    #     environment:
+    #         - REDIS_PASS_FILE=/run/secrets/redis_pswd_secret
+    #     depends_on:
+    #         - redis62
+
+    pgadmin4:
+        container_name: pgadmin4
+        image: dpage/pgadmin4
+        restart: always
+        env_file:
+            - ../env/.pgadmin.env
+        depends_on:
+            - postgres13
+        networks:
+            - backend-network
+            - public-network
+
+    nginx-proxy:
+        ports:
+            # - "5557:5557" # For celery-flower
+            - "5050:5050"
+        volumes:
+            - ../nginx/conf.d/nginx.local.debug.conf:/etc/nginx/conf.d/nginx.conf:ro
+            - ../nginx/services/pgadmin.conf:/etc/nginx/services/pgadmin.conf:ro
+            - ../nginx/.htpasswd:/etc/nginx/.htpasswd
+            # - ../nginx/services/flower.conf:/etc/nginx/services/flower.conf:ro
+
+        depends_on:
+            # - celery-flower
+            - pgadmin4
+
