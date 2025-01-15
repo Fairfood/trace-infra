@@ -62,7 +62,7 @@ PARENT_DIR=$(dirname "$SCRIPT_DIR")
 PROJECT_DIR="$PARENT_DIR/trace_connect"
 
 # Clone the repository
-REPO_URL="git@git.cied.in:fairfood/trace-v2/backend/docker/connect-docker.git"
+REPO_URL="git@git.cied.in:fairfood/trace-v2/backend/trace_connect.git"
 if [ ! -d "$PROJECT_DIR" ]; then
     echo "Cloning the repository to $PROJECT_DIR..."
     git clone "$REPO_URL" "$PROJECT_DIR"
