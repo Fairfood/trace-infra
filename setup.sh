@@ -55,6 +55,14 @@ if ! command -v docker &> /dev/null; then
     fi
 fi
 
+# Check if apache2-utils is installed
+echo "apache2-utils Installing..."
+if [ "$PLATFORM" == "Linux" ]; then
+    sudo apt-get update -y
+    sudo apt-get install apache2-utils -y
+elif [ "$PLATFORM" == "Darwin" ]; then
+    brew install apache2-utils
+fi
 
 # Determine the directory for project-infra
 SCRIPT_DIR=$(dirname "$(realpath "$0")")
@@ -63,13 +71,15 @@ PROJECT_DIR="$PARENT_DIR/trace_connect"
 
 # Clone the repository
 REPO_URL="git@git.cied.in:fairfood/trace-v2/backend/trace_connect.git"
+BRANCH="docker"
 if [ ! -d "$PROJECT_DIR" ]; then
     echo "Cloning the repository to $PROJECT_DIR..."
-    git clone "$REPO_URL" "$PROJECT_DIR"
+    git clone  --single-branch --branch "$BRANCH" "$REPO_URL" "$PROJECT_DIR"
 else
     echo "Repository already cloned at $PROJECT_DIR."
 fi
-Rename .sample files in the env folder
+
+#Rename .sample files in the env folder
 echo "Renaming .sample files in the env folder..."
 find "$SCRIPT_DIR/env" -type f -name "*.sample" | while read -r file; do
     dest="${file%.sample}"
@@ -114,6 +124,6 @@ fi
 echo "✔ Curl"
 echo "✔ Git"
 echo "✔ Docker"
-echo "Setup completed successfully.."
+echo "✔ Apache2-Utils"
 echo "✔ Files renamed and .htpasswd generated"
-echo "Setup completed successfully."
+echo "✔ Setup completed successfully."
