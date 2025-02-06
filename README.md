@@ -1,93 +1,229 @@
 # Connect  Infra 
 
 
+# Setup and Hosting Guide
 
-## Getting started
+## Overview
+This repository contains an automated setup script and Makefile for efficiently configuring and deploying the application. The setup script ensures all dependencies are installed, configures Nginx authentication, and prepares the environment, while the Makefile provides commands for managing databases, services, and the Django project.
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+## Prerequisites
+- A Unix-based system (Linux or macOS)
+- Sudo privileges (for package installation)
+- Docker and Docker Compose installed
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+## Features
+### Setup Script
+- Detects the operating system platform.
+- Installs missing dependencies (`curl`, `git`, `docker`, and `apache2-utils`).
+- Clones the `trace_connect` repository if not already present.
+- Renames `.sample` configuration files.
 
-## Add your files
+### Makefile
+- Database management: Dump, restore, shell access.
+- Service management: Start, stop, clean Docker containers.
+- Django management: Shell, logs, migrations, tests.
+- Environment management: Start/stop development, staging, and production environments.
 
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
+## Installation and Setup
+1. **Clone the repository:**
+   ```bash
+   git clone git@git.cied.in:fairfood/trace-v2/backend/trace_connect.git
+   cd trace_connect
+   ```
 
+2. **Run the setup script:**
+   ```bash
+   chmod +x setup.sh
+   ./setup.sh
+   ```
+
+## Makefile Commands
+### General Commands
+- `make help` – Display available commands.
+- `make default` – Show help information.
+
+### Django Management
+- `make django-shell` – Open the Django shell.
+- `make django-shellplus` – Open the Django shell with additional features.
+- `make collect-static` – Collect static files for deployment.
+- `make reload-nginx` – Reload the Nginx configuration.
+- `make django-logs` – Tail Django logs.
+- `make celery-logs` – Tail Celery logs.
+- `make celery-beat-logs` – Tail Celery Beat logs.
+- `make run-tests` – Run Django tests.
+- `make make-migrations` – Generate new migrations.
+- `make migrate` – Apply database migrations.
+- `make flush-db` – Flush the Django database.
+
+### Environment Management
+- `make up` – Start the environment using Docker Compose.
+- `make up-build` – Build and start the environment.
+- `make build-django` – Build the Django service without cache.
+- `make debug-up` – Start the environment with debugging enabled.
+- `make down` – Stop the environment.
+- `make debug-down` – Stop the debugging environment.
+- `make dev-up` – Start the development environment.
+- `make dev-down` – Stop the development environment.
+- `make stage-up` – Start the staging environment.
+- `make stage-down` – Stop the staging environment.
+- `make stage-debug-up` – Start the staging environment with debugging enabled.
+- `make stage-debug-down` – Stop the staging debugging environment.
+- `make prod-up` – Start the production environment.
+- `make prod-down` – Stop the production environment.
+- `make prod-debug-up` – Start the production environment with debugging enabled.
+- `make prod-debug-down` – Stop the production debugging environment.
+
+### Database Management
+- `make dump-all` – Dump all databases.
+- `make restore-all RESTORE_FILEPATH=<file>` – Restore all databases.
+- `make dump-all-compress` – Dump all databases as a compressed file.
+- `make restore-all-compress RESTORE_FILEPATH=<file>` – Restore all databases from a compressed file.
+- `make dump-db PG_DBNAME=<database>` – Dump a specific database.
+- `make restore-db PG_DBNAME=<database> RESTORE_FILEPATH=<file>` – Restore a specific database.
+- `make pg-shell` – Open an interactive PostgreSQL shell inside the container.
+
+### Service Management
+- `make stop-all` – Stop all running containers.
+- `make stop-and-remove` – Stop and remove all running containers.
+- `make clean-all` – Stop, remove containers, clear volumes, and prune images.
+
+### Docker Authentication
+- `make login` – Log into Docker.
+- `make logout` – Log out from Docker.
+
+## Docker Compose Configurations
+### Common Components
+- **Networks**: `backend-network`, `public-network`.
+- **Secrets**: PostgreSQL and Redis credentials.
+- **Volumes**: Persistent storage for database and cache.
+
+### Environments
+#### Debug (`debug-compose.yml`)
+- Includes pgAdmin for database management.
+- Nginx-proxy for routing requests.
+
+#### Development (`dev-compose.yml`)
+- PostgreSQL, Redis, and Django with live reloading.
+- Uses verbose logging for debugging.
+
+#### Local (`local-compose.yml`)
+- Optimized for local testing.
+- Mounts additional volumes for a smooth workflow.
+
+#### Staging (`staging-compose.yml`)
+- Mirrors production for final testing.
+- Uses a separate Docker image version.
+
+#### Production (`production-compose.yml`)
+- Optimized for security and performance.
+- Uses Gunicorn and Nginx authentication.
+
+## Security Measures
+- Secrets are securely mounted instead of using environment variables.
+- Redis and PostgreSQL require authentication.
+- Strict access policies for databases.
+
+## Detailed Explanation of the Script
+
+### Platform Detection
+
+```bash
+PLATFORM=$(uname)
+if [ "$PLATFORM" != "Linux" ] && [ "$PLATFORM" != "Darwin" ]; then
+    echo "Unsupported platform: $PLATFORM"
+    exit 1
+fi
 ```
-cd existing_repo
-git remote add origin https://git.cied.in/fairfood/trace-v2/backend/docker/connect-infra.git
-git branch -M main
-git push -uf origin main
+
+* Uses the uname command to determine the OS type.
+* If the OS is not Linux or macOS, the script exits.
+
+### Checking and Installing Dependencies
+
+```bash
+if ! command -v curl &> /dev/null; then
+    echo "curl is not installed. Installing..."
+    if [ "$PLATFORM" == "Linux" ]; then
+        sudo apt-get update
+        sudo apt-get install -y curl
+    elif [ "$PLATFORM" == "Darwin" ]; then
+        echo "curl is not installed. Please install it manually."
+        exit 1
+    fi
+fi
 ```
 
-## Integrate with your tools
+* Checks if curl is installed using command -v.
 
-- [ ] [Set up project integrations](https://git.cied.in/fairfood/trace-v2/backend/docker/connect-infra/-/settings/integrations)
+* If not found, it installs curl using apt-get (Linux) or prompts manual installation (macOS).
 
-## Collaborate with your team
+The same logic applies for checking and installing:
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Set auto-merge](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
+* **Git** (also installs brew on macOS if missing)
 
-## Test and Deploy
+* **Docker** (installs docker.io and adds the user to the docker group on Linux)
 
-Use the built-in continuous integration in GitLab.
+* **Apache2-utils** (for Nginx authentication setup)
 
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
+### Cloning the Repository
 
-***
+```bash
+REPO_URL="git@git.cied.in:fairfood/trace-v2/backend/trace_connect.git"
+BRANCH="docker"
+if [ ! -d "$PROJECT_DIR" ]; then
+    echo "Cloning the repository to $PROJECT_DIR..."
+    git clone --single-branch --branch "$BRANCH" "$REPO_URL" "$PROJECT_DIR"
+else
+    echo "Repository already cloned at $PROJECT_DIR."
+fi
+```
 
-# Editing this README
+- Defines the repository URL and branch name.
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
+- If the directory does not already exist, it clones the repository.
 
-## Suggestions for a good README
+### Renaming .sample Files
 
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+```bash
+echo "Renaming .sample files in the env folder..."
+find "$SCRIPT_DIR/env" -type f -name "*.sample" | while read -r file; do
+    dest="${file%.sample}"
+    echo "Renaming: $file -> $dest"
+    mv "$file" "$dest"
+done
+```
 
-## Name
-Choose a self-explaining name for your project.
+- Finds all .sample files in the env directory.
+- Renames them by removing .sample.
+- Uses find and mv to process each file.
+- The same logic is applied for renaming .sample files in services/secrets.
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+### Setting Up Nginx Authentication
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+```bash
+echo "Generating .htpasswd for Nginx..."
+HTPASSWD_FILE="$SCRIPT_DIR/nginx/.htpasswd"
+SAMPLE_HTPASSWD_FILE="$SCRIPT_DIR/nginx/.htpasswd.sample"
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+if [ -f "$SAMPLE_HTPASSWD_FILE" ]; then
+    read -p "Enter username for Nginx: " NGINX_USER
+    read -s -p "Enter password for Nginx: " NGINX_PASSWORD
+    echo
+    htpasswd -cb "$HTPASSWD_FILE" "$NGINX_USER" "$NGINX_PASSWORD"
+    rm -f "$SAMPLE_HTPASSWD_FILE"
+else
+    echo ".htpasswd.sample file not found. Skipping replacement."
+fi
+```
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+- If .htpasswd.sample exists, the user is prompted for a username and password.
+- The htpasswd command generates an encrypted password file.
+- The sample file is then deleted.
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+### Final Output
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+```bash
+echo "✔ Setup completed successfully."
+```
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
-
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
-
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
-
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
-
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
-
-## License
-For open source projects, say how it is licensed.
-
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+- Displays a success message at the end of execution.
