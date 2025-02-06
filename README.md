@@ -42,22 +42,9 @@ This repository contains an automated setup script and Makefile for efficiently 
 - `make help` – Display available commands.
 - `make default` – Show help information.
 
-### Django Management
-- `make django-shell` – Open the Django shell.
-- `make django-shellplus` – Open the Django shell with additional features.
-- `make collect-static` – Collect static files for deployment.
-- `make reload-nginx` – Reload the Nginx configuration.
-- `make django-logs` – Tail Django logs.
-- `make celery-logs` – Tail Celery logs.
-- `make celery-beat-logs` – Tail Celery Beat logs.
-- `make run-tests` – Run Django tests.
-- `make make-migrations` – Generate new migrations.
-- `make migrate` – Apply database migrations.
-- `make flush-db` – Flush the Django database.
-
-### Environment Management
-- `make up` – Start the environment using Docker Compose.
-- `make up-build` – Build and start the environment.
+### Environment based Management
+- `make up` – Start the environment using local environment.
+- `make up-build` – Build and start the local environment.
 - `make build-django` – Build the Django service without cache.
 - `make debug-up` – Start the environment with debugging enabled.
 - `make down` – Stop the environment.
@@ -72,6 +59,20 @@ This repository contains an automated setup script and Makefile for efficiently 
 - `make prod-down` – Stop the production environment.
 - `make prod-debug-up` – Start the production environment with debugging enabled.
 - `make prod-debug-down` – Stop the production debugging environment.
+
+### Django Management
+- `make django-shell` – Open the Django shell.
+- `make django-shellplus` – Open the Django shell with additional features.
+- `make collect-static` – Collect static files for deployment.
+- `make reload-nginx` – Reload the Nginx configuration.
+- `make django-logs` – Tail Django logs.
+- `make celery-logs` – Tail Celery logs.
+- `make celery-beat-logs` – Tail Celery Beat logs.
+- `make run-tests` – Run Django tests.
+- `make make-migrations` – Generate new migrations.
+- `make migrate` – Apply database migrations.
+- `make flush-db` – Flush the Django database.
+
 
 ### Database Management
 - `make dump-all` – Dump all databases.
@@ -111,10 +112,12 @@ This repository contains an automated setup script and Makefile for efficiently 
 - Mounts additional volumes for a smooth workflow.
 
 #### Staging (`staging-compose.yml`)
+- Pulls the staging image of the project from docker hub
 - Mirrors production for final testing.
 - Uses a separate Docker image version.
 
 #### Production (`production-compose.yml`)
+- Pulls the production image of the project from docker hub
 - Optimized for security and performance.
 - Uses Gunicorn and Nginx authentication.
 
