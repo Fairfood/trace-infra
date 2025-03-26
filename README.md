@@ -27,7 +27,7 @@ This repository contains an automated setup script and Makefile for efficiently 
 ## Installation and Setup
 1. **Clone the repository:**
    ```bash
-   git clone git@git.cied.in:fairfood/trace-v2/backend/trace_connect.git
+   git clone git@git.cied.in:fairfood/trace-v2/backend/docker/connect-infra.git
    cd trace_connect
    ```
 
