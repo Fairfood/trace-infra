@@ -90,6 +90,7 @@ services:
             - ../../static:/usr/src/app/trace_connect/static
             - ../env/.project.env:/usr/src/app/trace_connect/.env
             - ../services/secrets/public-key.pem:/usr/src/app/trace_connect/public-key.pem
+            - /etc/secrets:/etc/secrets
         networks:
             - backend-network
             - public-network
