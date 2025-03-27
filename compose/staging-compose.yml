@@ -91,6 +91,7 @@ services:
             - ../../trace_connect:/usr/src/app/trace_connect
             - ../../media:/usr/src/app/media
             - /etc/secret/trace_connect/:/etc/secret/trace_connect
+            - /etc/secrets:/etc/secrets
         networks:
             - backend-network
             - public-network
