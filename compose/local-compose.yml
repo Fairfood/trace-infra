@@ -86,16 +86,16 @@ services:
         env_file:
             - ../env/.django.env
         build:
-            context: ../../trace_connect
+            context: ../../fairtrace_v2
             dockerfile: Dockerfile
             args:
                 BUILD_ENV: "local"
         volumes:
-            - ../../trace_connect:/usr/src/app/trace_connect
-            - ../../static:/usr/src/app/trace_connect/static
-            - ../../media:/usr/src/app/trace_connect/media
-            - ../env/.project.env:/usr/src/app/trace_connect/.env
-            - ../services/secrets/public-key.pem:/usr/src/app/trace_connect/public-key.pem
+            - ../../fairtrace_v2:/usr/src/app/fairtrace_v2
+            - ../../static:/usr/src/app/fairtrace_v2/static
+            - ../../media:/usr/src/app/fairtrace_v2/media
+            - ../env/.project.env:/usr/src/app/fairtrace_v2/.env
+            - ../services/secrets/public-key.pem:/usr/src/app/fairtrace_v2/public-key.pem
             - /etc/secrets:/etc/secrets
         networks:
             - backend-network

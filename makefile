@@ -1,6 +1,6 @@
 # Variables with default values
 PG_CONTAINER ?= postgres13
-PG_DEFAULT_DB ?= trace_connect
+PG_DEFAULT_DB ?= fairtrace_v2
 PG_USER ?= traceadmin
 
 # Function to check required variables

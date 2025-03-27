@@ -83,19 +83,19 @@ services:
 
     django:
         container_name: tc-django
-        image: fairfood/connect:production
+        image: fairfood/fairtrace_v2:production
         restart: always
         env_file:
             - ../env/.django.env
         volumes:
-            - ../../trace_connect:/usr/src/app/trace_connect
+            - ../../fairtrace_v2:/usr/src/app/fairtrace_v2
             - ../../media:/usr/src/app/media
-            - /etc/secret/trace_connect/:/etc/secret/trace_connect
+            - /etc/secret/fairtrace_v2/:/etc/secret/fairtrace_v2
             - /etc/secrets:/etc/secrets
         networks:
             - backend-network
             - public-network
-        command: gunicorn trace_connect.wsgi --bind 0.0.0.0:8000 --reload
+        command: gunicorn fairtrace_v2.wsgi --bind 0.0.0.0:8000 --reload
         depends_on:
             - pgbouncer
             - redis62

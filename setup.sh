@@ -67,10 +67,10 @@ fi
 # Determine the directory for project-infra
 SCRIPT_DIR=$(dirname "$(realpath "$0")")
 PARENT_DIR=$(dirname "$SCRIPT_DIR")
-PROJECT_DIR="$PARENT_DIR/trace_connect"
+PROJECT_DIR="$PARENT_DIR/fairtrace_v2"
 
 # Clone the repository
-REPO_URL="git@git.cied.in:fairfood/trace-v2/backend/trace_connect.git"
+REPO_URL="git@git.cied.in:fairfood/trace-v2/backend/fairtrace_v2.git"
 BRANCH="docker"
 if [ ! -d "$PROJECT_DIR" ]; then
     echo "Cloning the repository to $PROJECT_DIR..."
