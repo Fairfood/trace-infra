@@ -71,7 +71,7 @@ PROJECT_DIR="$PARENT_DIR/fairtrace_v2"
 
 # Clone the repository
 REPO_URL="git@git.cied.in:fairfood/trace-v2/backend/fairtrace_v2.git"
-BRANCH="docker"
+BRANCH="master"
 if [ ! -d "$PROJECT_DIR" ]; then
     echo "Cloning the repository to $PROJECT_DIR..."
     git clone  --single-branch --branch "$BRANCH" "$REPO_URL" "$PROJECT_DIR"

@@ -1,107 +1,105 @@
 networks:
-    backend-network:
-        name: backend-network
-    public-network:
-        name: public-network
+  backend-network:
+    name: backend-network
+  public-network:
+    name: public-network
 
 secrets:
-    postgres_secret:
-        file: ../services/secrets/.postgres_secret
-    redis_secret:
-        file: ../services/secrets/.redis_secret
+  postgres_secret:
+    file: ../services/secrets/.postgres_secret
+  redis_secret:
+    file: ../services/secrets/.redis_secret
 
 services:
-    postgres13:
-        container_name: postgres13
-        image: postgres:13.0-alpine
-        restart: always
-        volumes:
-            - ../../pg13data:/var/lib/postgresql/data/
-            - ../services/config/postgresql.conf:/etc/postgresql/postgresql.conf
-        command: postgres -c config_file=/etc/postgresql/postgresql.conf
-        secrets:
-            - postgres_secret
-        environment:
-            - PGDATA=/var/lib/postgresql/data/pgdata
-            - POSTGRES_PASSWORD_FILE=/run/secrets/postgres_secret
-        env_file:
-            - ../env/.psql.env
-        networks:
-            - backend-network
-        healthcheck:
-            test:
-                ["CMD-SHELL", "pg_isready -d $$POSTGRES_DB -U $$POSTGRES_USER"]
-            interval: 1s
-            timeout: 5s
-            retries: 10
+  postgres13:
+    container_name: postgres13
+    image: postgres:13.0-alpine
+    restart: always
+    volumes:
+      - ../../pg13data:/var/lib/postgresql/data/
+      - ../services/config/postgresql.conf:/etc/postgresql/postgresql.conf
+    command: postgres -c config_file=/etc/postgresql/postgresql.conf
+    secrets:
+      - postgres_secret
+    environment:
+      - PGDATA=/var/lib/postgresql/data/pgdata
+      - POSTGRES_PASSWORD_FILE=/run/secrets/postgres_secret
+    env_file:
+      - ../env/.psql.env
+    networks:
+      - backend-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d $$POSTGRES_DB -U $$POSTGRES_USER"]
+      interval: 1s
+      timeout: 5s
+      retries: 10
 
-    pgbouncer:
-        container_name: pgbouncer
-        image: bitnami/pgbouncer
-        secrets:
-            - postgres_secret
-        env_file:
-            - ../env/.pgbouncer.env
-        depends_on:
-            - postgres13
-        networks:
-            - backend-network
+  pgbouncer:
+    container_name: pgbouncer
+    image: bitnami/pgbouncer
+    secrets:
+      - postgres_secret
+    env_file:
+      - ../env/.pgbouncer.env
+    depends_on:
+      - postgres13
+    networks:
+      - backend-network
 
-    redis62:
-        container_name: redis62
-        image: redis:6.2-alpine
-        restart: always
-        command: sh -c 'redis-server /etc/redis.conf --save 20 1 --loglevel warning --requirepass "$$(cat $$REDIS_PASS_FILE)"'
-        volumes:
-            - redis62:/data
-            - ../services/config/redis.conf:/etc/redis.conf
-        networks:
-            - backend-network
-        secrets:
-            - redis_secret
-        environment:
-            - REDIS_PASS_FILE=/run/secrets/redis_secret
-        healthcheck:
-            test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+  redis62:
+    container_name: redis62
+    image: redis:6.2-alpine
+    restart: always
+    command: sh -c 'redis-server /etc/redis.conf --save 20 1 --loglevel warning --requirepass "$$(cat $$REDIS_PASS_FILE)"'
+    volumes:
+      - redis62:/data
+      - ../services/config/redis.conf:/etc/redis.conf
+    networks:
+      - backend-network
+    secrets:
+      - redis_secret
+    environment:
+      - REDIS_PASS_FILE=/run/secrets/redis_secret
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
 
-    nginx-proxy:
-        container_name: nginx-proxy
-        image: nginxinc/nginx-unprivileged:latest
-        restart: always
-        env_file:
-            - ../env/.nginx.env
-        ports:
-            - "8000:8000"
-        volumes:
-            - ../../static/:/var/www/static
-            - ../nginx/.htpasswd:/etc/nginx/.htpasswd:ro
-            - ../nginx/conf.d/nginx.dev.conf:/etc/nginx/conf.d/nginx.conf:ro
-        networks:
-            - public-network
-        depends_on:
-            - django
+  nginx-proxy:
+    container_name: nginx-proxy
+    image: nginxinc/nginx-unprivileged:latest
+    restart: always
+    env_file:
+      - ../env/.nginx.env
+    ports:
+      - "8000:8000"
+    volumes:
+      - ../../static/:/var/www/static
+      - ../nginx/.htpasswd:/etc/nginx/.htpasswd:ro
+      - ../nginx/conf.d/nginx.dev.conf:/etc/nginx/conf.d/nginx.conf:ro
+    networks:
+      - public-network
+    depends_on:
+      - django
 
-    django:
-        container_name: tc-django
-        image: fairfood/fairtrace_v2:production
-        restart: always
-        env_file:
-            - ../env/.django.env
-        volumes:
-            - ../../fairtrace_v2:/usr/src/app/fairtrace_v2
-            - ../../media:/usr/src/app/media
-            - /etc/secret/fairtrace_v2/:/etc/secret/fairtrace_v2
-            - /etc/secrets:/etc/secrets
-        networks:
-            - backend-network
-            - public-network
-        command: gunicorn fairtrace_v2.wsgi --bind 0.0.0.0:8000 --reload
-        depends_on:
-            - pgbouncer
-            - redis62
+  django:
+    container_name: tc-django
+    image: fairfood/fairtrace_v2:production
+    restart: always
+    env_file:
+      - ../env/.django.env
+    volumes:
+      - ../../fairtrace_v2:/usr/src/app/fairtrace_v2
+      - ../../media:/usr/src/app/media
+      - /etc/secret/fairtrace_v2/:/etc/secret/fairtrace_v2
+      - /etc/secrets:/etc/secrets
+    networks:
+      - backend-network
+      - public-network
+    command: gunicorn fairtrace_v2.wsgi --bind 0.0.0.0:8000 --reload
+    depends_on:
+      - pgbouncer
+      - redis62
 
 volumes:
-    pg13data:
-    redis62:
-        driver: local
-
+  pg13data:
+  redis62:
+    driver: local
