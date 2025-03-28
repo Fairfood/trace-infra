@@ -50,7 +50,7 @@ services:
     container_name: redis62
     image: redis:6.2-alpine
     restart: always
-    command: sh -c 'redis-server /etc/redis.conf --save 20 1 --loglevel warning --requirepass "$$(cat $$REDIS_PASS_FILE)"'
+    command: sh -c 'redis-server /etc/redis.conf --save 20 1 --loglevel warning'
     volumes:
       - redis62:/data
       - ../services/config/redis.conf:/etc/redis.conf
@@ -74,7 +74,7 @@ services:
     volumes:
       - ../../static/:/var/www/static
       - ../nginx/.htpasswd:/etc/nginx/.htpasswd:ro
-      - ../nginx/conf.d/nginx.dev.conf:/etc/nginx/conf.d/nginx.conf:ro
+      - ../nginx/conf.d/nginx.conf:/etc/nginx/conf.d/nginx.conf
     networks:
       - public-network
     depends_on:
@@ -87,7 +87,7 @@ services:
     env_file:
       - ../env/.django.env
     volumes:
-      - ../../fairtrace_v2:/usr/src/app/fairtrace_v2
+      # - ../../fairtrace_v2/fairtrace_v2:/usr/src/app/fairtrace_v2
       - ../../media:/usr/src/app/media
       - /etc/secret/fairtrace_v2/:/etc/secret/fairtrace_v2
       - /etc/secrets:/etc/secrets
