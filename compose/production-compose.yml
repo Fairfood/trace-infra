@@ -82,7 +82,7 @@ services:
 
   django:
     container_name: tc-django
-    image: fairfood/fairtrace_v2:production
+    image: fairfood/trace_server:production
     restart: always
     env_file:
       - ../env/.django.env
